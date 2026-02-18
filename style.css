@@ -1,0 +1,26 @@
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;margin:0;background:#f6f7f9;color:#111}
+.wrap{max-width:900px;margin:0 auto;padding:18px}
+.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.badge{font-size:12px;background:#eef2ff;color:#3730a3;padding:6px 10px;border-radius:999px}
+.q{font-size:18px;line-height:1.6;white-space:pre-wrap}
+.btns{margin-top:14px;display:flex;gap:10px}
+button{border:0;border-radius:12px;padding:12px 14px;font-size:16px;cursor:pointer}
+.ox{flex:1}
+.o{background:#10b981;color:#fff}
+.x{background:#ef4444;color:#fff}
+.ghost{background:#e5e7eb;color:#111}
+.disabled{opacity:.5;cursor:not-allowed}
+.result{margin-top:14px;padding:12px;border-radius:12px;background:#f3f4f6}
+.result.good{background:#ecfdf5}
+.result.bad{background:#fef2f2}
+.result h3{margin:0 0 6px 0;font-size:15px}
+.explain{white-space:pre-wrap;line-height:1.6;font-size:14px}
+.footer{margin-top:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.small{font-size:12px;color:#6b7280}
+.hidden{display:none}
+.navbtns{display:flex;gap:10px;flex-wrap:wrap}
+.list{margin-top:12px}
+.item{padding:12px;border-radius:12px;background:#f9fafb;margin-bottom:10px}
+.item .title{font-size:13px;color:#374151;margin-bottom:6px}
+.pill{display:inline-block;font-size:12px;padding:4px 8px;border-radius:999px;background:#e5e7eb;margin-left:6px}
