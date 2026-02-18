@@ -1,3 +1,22 @@
+function prettifyText(s){
+  // PDF 텍스트 추출 특유의 어색한 줄바꿈 정리:
+  // - 문단 구분(빈 줄)은 유지
+  // - 문단 내부의 단일 줄바꿈은 공백으로 치환
+  if(!s) return '';
+  s = String(s).replace(/\r/g,'');
+  // normalize multiple spaces
+  const paras = s.split(/\n{2,}/).map(p=>{
+    // keep bullet/numbered lines as-is if they look like list
+    // but still remove mid-line breaks
+    const lines = p.split(/\n/).map(x=>x.trim()).filter(x=>x.length>0);
+    // If it looks like a multi-line list (many lines starting with bullet/number), keep newlines
+    const listLike = lines.length>=2 && lines.every(x=>/^([0-9]+[.)]|[-*•]|①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩)/.test(x));
+    if(listLike) return lines.join('\n');
+    return lines.join(' ').replace(/\s{2,}/g,' ').trim();
+  });
+  return paras.join('\n\n').trim();
+}
+
 async function loadQuestions(){
   const res = await fetch('questions.json', {cache:'no-store'});
   if(!res.ok) throw new Error('questions.json 로드 실패');
@@ -10,7 +29,7 @@ function shuffle(arr){
   }
   return arr;
 }
-const LS_KEY='ox_wrong_hyeongsa_policy_chaptered_full_v1';
+const LS_KEY='ox_wrong_hyeongsa_policy_chaptered_fixed_v1';
 function loadWrong(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; } }
 function saveWrong(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
 function addWrong(q, userAnswer){
@@ -56,7 +75,7 @@ function sample20(){
 }
 function render(){
   const q=QUIZ[idx];
-  elQ.textContent=q.statement;
+  elQ.textContent=prettifyText(q.statement);
   elProg.textContent=`${idx+1} / 20`;
   elScore.textContent=`점수: ${score}`;
   elMeta.textContent=`문항번호: CH${q.chapter}-${q.no} / 전체문항: ${ALL.length}`;
@@ -109,7 +128,7 @@ function renderWrong(){
   const list=loadWrong();
   if(list.length===0){ wrongList.innerHTML='<div class="item">오답이 없음.</div>'; return; }
   wrongList.innerHTML=list.map((x,i)=>{
-    const safeStmt=x.statement.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safeStmt=prettifyText(x.statement).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const safeExp=(x.explanation||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     return `
       <div class="item">
