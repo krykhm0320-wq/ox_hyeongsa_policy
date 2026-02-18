@@ -6,7 +6,7 @@ function prettifyText(s, keepParagraphs=true){
   if(!s) return '';
   s = String(s).replace(/\r/g,'');
   // 단어 중간에서 끊긴 줄바꿈(예: 교\n\n육) 복구
-  s = s.replace(/([가-힣])\n{1,}([가-힣])(?=[가-힣])/g, '$1$2');
+  s = s.replace(/([가-힣])\s*\n+\s*([가-힣])(?=[가-힣])/g, '$1$2');
 
   const splitRe = keepParagraphs ? /\n{2,}/ : /\n+/;
   const paras = s.split(splitRe).map(p=>{
