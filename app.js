@@ -1,21 +1,25 @@
-function prettifyText(s){
-  // PDF 텍스트 추출 특유의 어색한 줄바꿈 정리:
-  // - 문단 구분(빈 줄)은 유지
-  // - 문단 내부의 단일 줄바꿈은 공백으로 치환
+function prettifyText(s, keepParagraphs=true){
+  // 원본 줄바꿈은 화면 가독성에 도움 안 되는 경우가 많아서 대부분 제거.
+  // - 기본: 문단(빈 줄)은 유지(keepParagraphs=true)
+  // - 문단 내부 줄바꿈/강제개행은 공백으로 합침
+  // - 다만 '목록 형태'는 줄바꿈 유지
   if(!s) return '';
   s = String(s).replace(/\r/g,'');
-  // normalize multiple spaces
-  const paras = s.split(/\n{2,}/).map(p=>{
-    // keep bullet/numbered lines as-is if they look like list
-    // but still remove mid-line breaks
-    const lines = p.split(/\n/).map(x=>x.trim()).filter(x=>x.length>0);
-    // If it looks like a multi-line list (many lines starting with bullet/number), keep newlines
+  // 단어 중간에서 끊긴 줄바꿈(예: 교\n\n육) 복구
+  s = s.replace(/([가-힣])\n{1,}([가-힣])(?=[가-힣])/g, '$1$2');
+
+  const splitRe = keepParagraphs ? /\n{2,}/ : /\n+/;
+  const paras = s.split(splitRe).map(p=>{
+    const lines = p.split(/\n+/).map(x=>x.trim()).filter(x=>x.length>0);
+    if(lines.length===0) return '';
     const listLike = lines.length>=2 && lines.every(x=>/^([0-9]+[.)]|[-*•]|①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩)/.test(x));
     if(listLike) return lines.join('\n');
     return lines.join(' ').replace(/\s{2,}/g,' ').trim();
-  });
-  return paras.join('\n\n').trim();
+  }).filter(Boolean);
+
+  return keepParagraphs ? paras.join('\n\n') : paras.join(' ');
 }
+
 
 async function loadQuestions(){
   const res = await fetch('questions.json', {cache:'no-store'});
@@ -75,7 +79,7 @@ function sample20(){
 }
 function render(){
   const q=QUIZ[idx];
-  elQ.textContent=prettifyText(q.statement);
+  elQ.textContent=prettifyText(q.statement, false);
   elProg.textContent=`${idx+1} / 20`;
   elScore.textContent=`점수: ${score}`;
   elMeta.textContent=`문항번호: CH${q.chapter}-${q.no} / 전체문항: ${ALL.length}`;
@@ -128,7 +132,7 @@ function renderWrong(){
   const list=loadWrong();
   if(list.length===0){ wrongList.innerHTML='<div class="item">오답이 없음.</div>'; return; }
   wrongList.innerHTML=list.map((x,i)=>{
-    const safeStmt=prettifyText(x.statement).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safeStmt=prettifyText(x.statement, false).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const safeExp=(x.explanation||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     return `
       <div class="item">
