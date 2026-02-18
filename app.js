@@ -92,6 +92,23 @@ function showResult(user){
   title.textContent= ok ? `정답 (정답: ${correct})` : `오답 (정답: ${correct})`;
   explain.textContent= (q.explanation && q.explanation.trim()) ? q.explanation : '(해설 추출 누락)';
   locked=true; setBtnsEnabled(false);
+
+  // 조문 원문(박스)
+  const oldLaw = document.getElementById('lawbox');
+  if(oldLaw) oldLaw.remove();
+  if(q.law && String(q.law).trim().length>0){
+    const box=document.createElement('div');
+    box.id='lawbox';
+    box.className='lawbox';
+    const t=document.createElement('div');
+    t.className='title';
+    t.textContent='조문 원문';
+    const b=document.createElement('div');
+    b.textContent = q.law;
+    box.appendChild(t);
+    box.appendChild(b);
+    explain.parentElement.insertBefore(box, explain.nextSibling);
+  }
 }
 function onNextClick(){
   if(!locked) return;
