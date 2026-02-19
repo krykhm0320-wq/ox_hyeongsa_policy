@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>형사정책 법령 심화 OX (챕터별 번호) (랜덤20제/순서대로 풀기 + 오답노트)</title>
+  <title>OX 퀴즈 (랜덤20제/순서대로 풀기)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -15,15 +15,18 @@
         <div class="navbtns">
           <button class="ghost" id="btnRestart">랜덤20제</button>
           <button class="ghost" id="btnSequential">순서대로 풀기</button>
-          <button class="ghost" id="btnWrong">오답노트 보기</button>
-          <button class="ghost hidden" id="btnBack">퀴즈로 돌아가기</button>
-          <button class="ghost hidden" id="btnClearWrong">오답노트 비우기</button>
+          <button class="ghost" id="btnRetryWrong">틀린문제 다시풀기</button>
+          <button class="ghost" id="btnBookmarks">북마크 풀기</button>
         </div>
         <div class="badge" id="score">점수: 0</div>
       </div>
 
       <div id="quizView">
         <div class="q" id="question">불러오는 중...</div>
+
+        <div class="toolbar">
+          <button class="ghost sm" id="btnBookmark">☆ 북마크</button>
+        </div>
 
         <div class="btns">
           <button class="ox o" id="btnO">O</button>
@@ -43,10 +46,7 @@
           <div class="small" id="meta"></div>
         </div>
       </div>
-
-      <div id="wrongView" class="hidden">
-        <div class="small">오답노트는 이 기기(브라우저)에 저장됩니다. (localStorage)</div>
-        <div class="list" id="wrongList"></div>
+<div class="list" id="wrongList"></div>
       </div>
     </div>
   </div>
