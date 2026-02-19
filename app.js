@@ -33,6 +33,7 @@ function addWrong(q, userAnswer){
 }
 
 let ALL=[], QUIZ=[], idx=0, score=0, locked=false;
+let MODE='random20'; // 'random20' | 'sequential'
 
 const elQ=document.getElementById('question');
 const elProg=document.getElementById('progress');
@@ -44,6 +45,7 @@ const btnX=document.getElementById('btnX');
 const btnNext=document.getElementById('btnNext');
 const btnNextTop=document.getElementById('btnNextTop');
 const btnRestart=document.getElementById('btnRestart');
+const btnSequential=document.getElementById('btnSequential');
 const btnWrong=document.getElementById('btnWrong');
 const btnBack=document.getElementById('btnBack');
 const btnClearWrong=document.getElementById('btnClearWrong');
@@ -64,19 +66,39 @@ function sample20(){
   shuffle(copy);
   return copy.slice(0,20);
 }
+
+function buildSequential(){
+  // CH1-1부터 쭉 (chapter, no) 기준 정렬
+  return ALL.slice().sort((a,b)=>{
+    const ac=Number(a.chapter), bc=Number(b.chapter);
+    const an=Number(a.no), bn=Number(b.no);
+    if(Number.isFinite(ac) && Number.isFinite(bc) && ac!==bc) return ac-bc;
+    if(Number.isFinite(an) && Number.isFinite(bn) && an!==bn) return an-bn;
+    // fallback
+    const ai=Number(a.id), bi=Number(b.id);
+    if(Number.isFinite(ai) && Number.isFinite(bi) && ai!==bi) return ai-bi;
+    return String(a.id).localeCompare(String(b.id));
+  });
+}
+
+function totalCount(){
+  return QUIZ.length || 0;
+}
 function render(){
   const q=QUIZ[idx];
   elQ.textContent=prettifyText(q.statement);
-  elProg.textContent=`${idx+1} / 20`;
+  elProg.textContent=`${idx+1} / ${totalCount()}`;
   elScore.textContent=`점수: ${score}`;
-  elMeta.textContent=`문항번호: CH${q.chapter}-${q.no} / 전체문항: ${ALL.length}`;
+  const modeLabel = (MODE==='sequential') ? '순서대로' : '랜덤20제';
+  elMeta.textContent=`모드: ${modeLabel} · 문항번호: CH${q.chapter}-${q.no} / 전체문항: ${ALL.length}`;
   box.classList.add('hidden'); box.classList.remove('good','bad');
   title.textContent=''; explain.textContent='';
   locked=false; setBtnsEnabled(true);
 }
 function finish(){
-  elQ.textContent=`끝. 점수 ${score}/20`;
-  elProg.textContent='20 / 20';
+  const t=totalCount();
+  elQ.textContent=`끝. 점수 ${score}/${t}`;
+  elProg.textContent=`${t} / ${t}`;
   elMeta.textContent=`오답노트: ${loadWrong().length}개`;
   setBtnsEnabled(false); box.classList.add('hidden'); locked=true;
 }
@@ -150,13 +172,16 @@ function renderWrong(){
     `;
   }).join('');
 }
-btnRestart.addEventListener('click', ()=>{ restart(); });
+btnRestart.addEventListener('click', ()=>{ restart('random20'); });
+btnSequential.addEventListener('click', ()=>{ restart('sequential'); });
 btnWrong.addEventListener('click', ()=>{ setWrongMode(); });
 btnBack.addEventListener('click', ()=>{ setQuizMode(); });
 btnClearWrong.addEventListener('click', ()=>{ saveWrong([]); renderWrong(); });
 
-function restart(){
-  QUIZ=sample20(); idx=0; score=0; locked=false;
+function restart(mode){
+  MODE = mode || MODE || 'random20';
+  QUIZ = (MODE==='sequential') ? buildSequential() : sample20();
+  idx=0; score=0; locked=false;
   setQuizMode(); render();
 }
 btnO.addEventListener('click', ()=>{ if(locked) return; showResult('O'); });
@@ -164,7 +189,7 @@ btnX.addEventListener('click', ()=>{ if(locked) return; showResult('X'); });
 
 (async ()=>{
   ALL=await loadQuestions();
-  restart();
+  restart('random20');
 })().catch(e=>{
   elQ.textContent='불러오기 실패: '+e.message;
 });
