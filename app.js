@@ -97,6 +97,46 @@ function buildSequential(){
   });
 }
 
+
+function buildWrongOnly(){
+  const wrong = loadWrong(); // [{key,...}]
+  if(!wrong.length) return [];
+  // key => entry for stable ordering
+  const keySet = new Set(wrong.map(x=>x.key));
+  const byKey = new Map();
+  for(const q of ALL){
+    const key = String(q.id)+'|'+q.statement;
+    if(keySet.has(key)) byKey.set(key, q);
+  }
+  const out=[];
+  for(const w of wrong){
+    const q = byKey.get(w.key);
+    if(q) out.push(q);
+  }
+  return out;
+}
+function buildBookmarksOnly(){
+  const ids = loadBookmarks();
+  if(!ids.length) return [];
+  const set = new Set(ids.map(Number));
+  const out = ALL.filter(q=>set.has(Number(q.id)));
+  out.sort((a,b)=>Number(a.id)-Number(b.id));
+  return out;
+}
+function setQuizMode(){
+  // 버튼 활성/비활성(데이터 없으면 비활성)
+  const w = loadWrong().length;
+  const b = loadBookmarks().length;
+  btnRetryWrong.disabled = (w===0);
+  btnRetryWrong.classList.toggle('disabled', w===0);
+  btnBookmarks.disabled = (b===0);
+  btnBookmarks.classList.toggle('disabled', b===0);
+
+  // 진행 표시 초기화
+  elProg.textContent = `0 / ${totalCount() || (MODE==='sequential' ? ALL.length : 20)}`;
+  updateMeta(null);
+}
+
 function totalCount(){
   return QUIZ.length || 0;
 }
@@ -114,7 +154,7 @@ function updateMeta(q){
 }
 function render(){
   const q=QUIZ[idx];
-  elQ.textContent=prettifyStatement(q.statement);
+  elQ.textContent=prettifyText(q.statement);
   elProg.textContent=`${idx+1} / ${totalCount()}`;
   elScore.textContent=`점수: ${score}`;
   updateMeta(q);
@@ -176,9 +216,36 @@ btnBookmark.addEventListener('click', ()=>{
 
 function restart(mode){
   MODE = mode || MODE || 'random20';
-  QUIZ = (MODE==='sequential') ? buildSequential() : sample20();
+
+  if(MODE==='sequential'){
+    QUIZ = buildSequential();
+  }else if(MODE==='wrongOnly'){
+    QUIZ = buildWrongOnly();
+  }else if(MODE==='bookmarks'){
+    QUIZ = buildBookmarksOnly();
+  }else{
+    QUIZ = sample20();
+    MODE = 'random20';
+  }
+
   idx=0; score=0; locked=false;
-  setQuizMode(); render();
+
+  // 데이터가 없으면 안내 후 종료상태로
+  if(!QUIZ || QUIZ.length===0){
+    const msg = (MODE==='wrongOnly') ? '틀린문제가 없습니다.' :
+                (MODE==='bookmarks') ? '북마크한 문제가 없습니다.' :
+                '문제가 없습니다.';
+    elQ.textContent = msg;
+    elProg.textContent = `0 / 0`;
+    elScore.textContent = `점수: 0`;
+    updateMeta(null);
+    setBtnsEnabled(false);
+    locked=true;
+    return;
+  }
+
+  setQuizMode();
+  render();
 }
 btnO.addEventListener('click', ()=>{ if(locked) return; showResult('O'); });
 btnX.addEventListener('click', ()=>{ if(locked) return; showResult('X'); });
