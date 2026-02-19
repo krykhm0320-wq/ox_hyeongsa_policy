@@ -132,30 +132,31 @@ function finish(){
   setBtnsEnabled(false); box.classList.add('hidden'); locked=true;
 }
 
+function showResult(picked){
+  const q=QUIZ[idx];
+  const correct=String(q.answer||'').trim().toUpperCase();
+  const p=String(picked||'').trim().toUpperCase();
+  const ok = (p===correct);
+  if(ok) score+=1;
+
+  // 오답 목록 관리
+  const key=String(q.id)+'|'+q.statement;
+  if(MODE==='wrongOnly'){
+    if(ok) removeWrongByKey(key);
+    else addWrong(q, p);
+  }else{
+    if(!ok) addWrong(q, p);
+  }
+
   box.classList.remove('hidden');
   box.classList.toggle('good', ok);
   box.classList.toggle('bad', !ok);
   title.textContent= ok ? `정답 (정답: ${correct})` : `오답 (정답: ${correct})`;
   explain.textContent= (q.explanation && q.explanation.trim()) ? q.explanation : '(해설 추출 누락)';
   locked=true; setBtnsEnabled(false);
-
-  // 조문 원문(박스)
-  const oldLaw = document.getElementById('lawbox');
-  if(oldLaw) oldLaw.remove();
-  if(q.law && String(q.law).trim().length>0){
-    const box=document.createElement('div');
-    box.id='lawbox';
-    box.className='lawbox';
-    const t=document.createElement('div');
-    t.className='title';
-    t.textContent='조문 원문';
-    const b=document.createElement('div');
-    b.textContent = q.law;
-    box.appendChild(t);
-    box.appendChild(b);
-    explain.parentElement.insertBefore(box, explain.nextSibling);
-  }
+  updateMeta(q);
 }
+
 function onNextClick(){
   if(!locked) return;
   if(idx<QUIZ.length-1){ idx+=1; render(); } else { finish(); }
